@@ -1,9 +1,7 @@
 "use client";
-
 import { createContext, useContext, useState, ReactNode } from "react";
 
-type CartItem = { id: string; name: string; price: number; toppings: string };
-
+type CartItem = { id: string; name: string; price: number; variant: string; version: string };
 type CartContextType = {
   cart: Record<string, number>;
   items: Record<string, CartItem>;
@@ -21,17 +19,11 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const [drawerOpen, setDrawerOpen] = useState(false);
 
   const addToCart = (item: CartItem) => {
-    setCart((c) => ({ ...c, [item.id]: (c[item.id] || 0) + 1 }));
-    setItems((i) => ({ ...i, [item.id]: item }));
+    setCart(c => ({ ...c, [item.id]: (c[item.id] || 0) + 1 }));
+    setItems(i => ({ ...i, [item.id]: item }));
   };
-
   const removeFromCart = (id: string) => {
-    setCart((c) => {
-      const n = { ...c };
-      if (n[id] > 1) n[id]--;
-      else delete n[id];
-      return n;
-    });
+    setCart(c => { const n = { ...c }; if (n[id] > 1) n[id]--; else delete n[id]; return n; });
   };
 
   return (

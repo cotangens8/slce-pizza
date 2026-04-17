@@ -1,68 +1,73 @@
 "use client";
-
 import { useCart } from "./CartContext";
-import PizzaSVG from "./PizzaSVG";
+import PizzaGlyph from "./PizzaGlyph";
+
+const qtyBtn: React.CSSProperties = {
+  width: 32, height: 32, border: "none", background: "rgba(255,255,255,0.04)",
+  color: "#fff", cursor: "pointer", fontFamily: "var(--mono)", fontSize: 14,
+};
 
 export default function CartDrawer() {
-  const { cart, items, drawerOpen, setDrawerOpen } = useCart();
+  const { cart, items, addToCart, removeFromCart, drawerOpen, setDrawerOpen } = useCart();
   const entries = Object.entries(cart);
-  const total = entries.reduce((a, [id, qty]) => a + (items[id]?.price || 0) * qty, 0);
+  const subtotal = entries.reduce((a, [id, qty]) => a + (items[id]?.price || 0) * qty, 0);
+  const vat = subtotal * 0.19;
+  const total = subtotal + vat;
 
   return (
     <>
-      <div
-        onClick={() => setDrawerOpen(false)}
-        style={{
-          position: "fixed", inset: 0, background: "rgba(0,0,0,0.6)", zIndex: 200,
-          opacity: drawerOpen ? 1 : 0, pointerEvents: drawerOpen ? "auto" : "none",
-          transition: "opacity 0.3s",
-        }}
-      />
-      <div style={{
-        position: "fixed", top: 0, right: 0, bottom: 0, width: 380, zIndex: 201,
-        background: "#0a0a0a", borderLeft: "1px solid rgba(255,255,255,0.08)",
+      <div onClick={() => setDrawerOpen(false)} style={{
+        position: "fixed", inset: 0, background: "rgba(0,0,0,0.6)", zIndex: 200,
+        opacity: drawerOpen ? 1 : 0, pointerEvents: drawerOpen ? "auto" : "none", transition: "opacity 240ms",
+        backdropFilter: drawerOpen ? "blur(4px)" : "none",
+      }} />
+      <aside style={{
+        position: "fixed", top: 0, right: 0, bottom: 0, width: 420, maxWidth: "92vw", zIndex: 201,
+        background: "#07080a", borderLeft: "1px solid var(--line-strong)",
         transform: drawerOpen ? "translateX(0)" : "translateX(100%)",
-        transition: "transform 0.35s cubic-bezier(.16,1,.3,1)",
+        transition: "transform 320ms cubic-bezier(.16,1,.3,1)",
         display: "flex", flexDirection: "column",
       }}>
-        <div style={{
-          padding: "20px 24px", borderBottom: "1px solid rgba(255,255,255,0.06)",
+        <header style={{
+          padding: "16px 20px", borderBottom: "1px solid var(--line)",
           display: "flex", justifyContent: "space-between", alignItems: "center",
         }}>
-          <span style={{ fontSize: 15, fontWeight: 700, color: "#fff" }}>Your order</span>
-          <button onClick={() => setDrawerOpen(false)} style={{
-            width: 32, height: 32, borderRadius: 8, border: "1px solid rgba(255,255,255,0.08)",
-            background: "transparent", color: "rgba(255,255,255,0.5)", fontSize: 16,
-            cursor: "pointer", fontFamily: "inherit",
-          }}>×</button>
-        </div>
+          <div>
+            <div className="mono" style={{ fontSize: 10, color: "var(--fg-muted)", letterSpacing: "0.1em", textTransform: "uppercase" }}>cart.drawer</div>
+            <div className="mono" style={{ fontSize: 14, fontWeight: 600, marginTop: 2 }}>Your order</div>
+          </div>
+          <button className="btn" style={{ padding: "6px 10px" }} onClick={() => setDrawerOpen(false)}>esc</button>
+        </header>
 
-        <div style={{ flex: 1, overflow: "auto", padding: 24 }}>
+        <div style={{ flex: 1, overflow: "auto", padding: 20 }}>
           {entries.length === 0 ? (
-            <div style={{ textAlign: "center", paddingTop: 60, color: "rgba(255,255,255,0.25)", fontSize: 14 }}>
-              No slices yet. Go grab some.
+            <div style={{ textAlign: "center", paddingTop: 80, color: "var(--fg-muted)" }}>
+              <div className="mono" style={{ fontSize: 12 }}>// cart is empty</div>
+              <div className="mono" style={{ fontSize: 11, marginTop: 6 }}>add a slice to begin.</div>
             </div>
           ) : (
-            <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
               {entries.map(([id, qty]) => {
-                const item = items[id];
-                if (!item) return null;
+                const item = items[id]; if (!item) return null;
                 return (
                   <div key={id} style={{
-                    display: "flex", alignItems: "center", gap: 16,
-                    padding: 16, borderRadius: 12,
-                    border: "1px solid rgba(255,255,255,0.05)",
-                    background: "rgba(255,255,255,0.02)",
+                    display: "flex", gap: 14, alignItems: "center",
+                    padding: 14, border: "1px solid var(--line)", borderRadius: 10, background: "rgba(255,255,255,0.015)",
                   }}>
-                    <PizzaSVG toppings={item.toppings} size={48} />
-                    <div style={{ flex: 1 }}>
-                      <div style={{ fontSize: 14, fontWeight: 600, color: "#fff" }}>{item.name}</div>
-                      <div style={{ fontSize: 12, color: "rgba(255,255,255,0.3)", marginTop: 2 }}>
-                        {qty} × €{item.price.toFixed(2)}
-                      </div>
+                    <div style={{ width: 48, height: 48, display: "grid", placeItems: "center", border: "1px solid var(--line)", borderRadius: 8 }}>
+                      <PizzaGlyph variant={item.variant} size={40} />
                     </div>
-                    <div style={{ fontSize: 15, fontWeight: 700, color: "#fff" }}>
-                      €{(item.price * qty).toFixed(2)}
+                    <div style={{ flex: 1 }}>
+                      <div className="mono" style={{ fontSize: 12, fontWeight: 600 }}>{item.name}</div>
+                      <div className="mono" style={{ fontSize: 10, color: "var(--fg-muted)", marginTop: 3 }}>{id} · v{item.version}</div>
+                    </div>
+                    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                      <div style={{ display: "flex", alignItems: "center", border: "1px solid var(--line)", borderRadius: 7, overflow: "hidden" }}>
+                        <button onClick={() => removeFromCart(id)} style={qtyBtn}>−</button>
+                        <span className="mono" style={{ minWidth: 22, textAlign: "center", fontSize: 11 }}>{qty}</span>
+                        <button onClick={() => addToCart(item)} style={qtyBtn}>+</button>
+                      </div>
+                      <span className="mono" style={{ width: 52, textAlign: "right", fontSize: 13, fontWeight: 600 }}>€{(item.price * qty).toFixed(2)}</span>
                     </div>
                   </div>
                 );
@@ -72,21 +77,25 @@ export default function CartDrawer() {
         </div>
 
         {entries.length > 0 && (
-          <div style={{ padding: 24, borderTop: "1px solid rgba(255,255,255,0.06)" }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
-              <span style={{ fontSize: 13, color: "rgba(255,255,255,0.4)" }}>Total</span>
-              <span style={{ fontSize: 24, fontWeight: 700, color: "#fff" }}>€{total.toFixed(2)}</span>
+          <footer style={{ padding: 20, borderTop: "1px solid var(--line)" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
+              <span className="mono" style={{ fontSize: 11, color: "var(--fg-muted)" }}>subtotal</span>
+              <span className="mono" style={{ fontSize: 12 }}>€{subtotal.toFixed(2)}</span>
             </div>
-            <button style={{
-              width: "100%", padding: "14px 0", borderRadius: 12, border: "none",
-              background: "#fff", color: "#000", fontSize: 14, fontWeight: 700,
-              cursor: "pointer", fontFamily: "inherit",
-            }}>
-              Checkout — €{total.toFixed(2)}
+            <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 14 }}>
+              <span className="mono" style={{ fontSize: 11, color: "var(--fg-muted)" }}>tax (19% VAT)</span>
+              <span className="mono" style={{ fontSize: 12 }}>€{vat.toFixed(2)}</span>
+            </div>
+            <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 16, paddingTop: 12, borderTop: "1px solid var(--line)" }}>
+              <span className="mono" style={{ fontSize: 12, color: "var(--fg-dim)" }}>total</span>
+              <span className="mono" style={{ fontSize: 22, fontWeight: 600 }}>€{total.toFixed(2)}</span>
+            </div>
+            <button className="btn btn-primary" style={{ width: "100%", justifyContent: "center", padding: "13px 16px" }}>
+              $ slce checkout &nbsp;<span style={{ opacity: 0.5 }}>↵</span>
             </button>
-          </div>
+          </footer>
         )}
-      </div>
+      </aside>
     </>
   );
 }

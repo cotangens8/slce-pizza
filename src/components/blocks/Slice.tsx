@@ -1,24 +1,36 @@
 "use client";
-
 import { useState } from "react";
 import { storyblokEditable } from "@storyblok/react/rsc";
-import PizzaSVG from "../PizzaSVG";
+import PizzaGlyph from "../PizzaGlyph";
 import { useCart } from "../CartContext";
 
-export default function Slice({ blok }: { blok: any }) {
+const qtyBtnStyle: React.CSSProperties = {
+  width: 32, height: 32, border: "none", background: "rgba(255,255,255,0.04)",
+  color: "#fff", cursor: "pointer", fontFamily: "var(--mono)", fontSize: 14,
+};
+
+export default function SliceCard({ blok }: { blok: any }) {
   const [hovered, setHovered] = useState(false);
   const { cart, addToCart, removeFromCart } = useCart();
 
-  const sliceId = blok._uid;
+  const sliceId = blok.name ? `slce.${blok.name.toLowerCase().replace(/\s+/g, "-")}` : blok._uid;
   const count = cart[sliceId] || 0;
+  const price = parseFloat(blok.price) || 0;
+  const variant = blok.toppings || blok.variant || "basic";
+  const version = blok.tag === "LTS" ? "1.0.12" : blok.tag === "SPICY" ? "2.3.0" : blok.tag === "PRO" ? "3.1.0-rc" : "4.2.0";
+  const badge = blok.tag || "STABLE";
+  const badgeColor = badge === "SPICY" ? "var(--err)" : badge === "ENTERPRISE" || badge === "Premium" ? "var(--warn)" : undefined;
+
+  // Build specs from description or defaults
+  const specs = [
+    { k: "toppings", v: variant === "enterprise" ? "premium" : variant === "pro" ? "mixed" : "classic" },
+    { k: "heat", v: "900°F" },
+    { k: "bake", v: "92s" },
+    { k: "calories", v: `${Math.round(price * 60 + 40)}kcal` },
+  ];
 
   const handleAdd = () => {
-    addToCart({
-      id: sliceId,
-      name: blok.name || "Slice",
-      price: parseFloat(blok.price) || 0,
-      toppings: blok.toppings || "pepperoni",
-    });
+    addToCart({ id: sliceId, name: blok.name || "Slice", price, variant, version });
   };
 
   return (
@@ -27,80 +39,79 @@ export default function Slice({ blok }: { blok: any }) {
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       style={{
-        position: "relative",
-        background: hovered ? "rgba(255,255,255,0.03)" : "rgba(255,255,255,0.01)",
-        border: `1px solid ${hovered ? "rgba(255,255,255,0.1)" : "rgba(255,255,255,0.05)"}`,
-        borderRadius: 16, padding: 28,
-        transition: "all 0.35s cubic-bezier(.16,1,.3,1)",
-        transform: hovered ? "translateY(-4px)" : "translateY(0)",
-        display: "flex", flexDirection: "column", minHeight: 380,
+        position: "relative", borderRadius: 14,
+        border: `1px solid ${hovered ? "rgba(255,255,255,0.18)" : "var(--line)"}`,
+        background: hovered ? "rgba(16,18,22,0.9)" : "rgba(10,12,16,0.72)",
+        backdropFilter: "blur(14px) saturate(120%)",
+        WebkitBackdropFilter: "blur(14px) saturate(120%)",
+        padding: 22,
+        transition: "all 320ms cubic-bezier(.16,1,.3,1)",
+        transform: hovered ? "translateY(-3px)" : "translateY(0)",
+        boxShadow: hovered ? "0 24px 60px -24px rgba(0,0,0,0.8)" : "none",
+        overflow: "hidden",
       }}
     >
-      <div style={{
-        display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 4,
-      }}>
-        <span style={{
-          fontSize: 10, fontWeight: 600, color: "rgba(255,255,255,0.35)",
-          letterSpacing: "0.1em", textTransform: "uppercase",
-        }}>{blok.tag || ""}</span>
-        {blok.spice_level > 0 && (
-          <span style={{ fontSize: 11, color: "#ef4444" }}>
-            {"●".repeat(blok.spice_level)}
-          </span>
-        )}
+      {/* Header row */}
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
+        <span className="mono" style={{ fontSize: 10, color: "var(--fg-muted)", letterSpacing: "0.12em", textTransform: "uppercase" }}>
+          // {sliceId}
+        </span>
+        <span className="mono" style={{
+          fontSize: 10, color: badgeColor || "var(--fg-muted)",
+          padding: "2px 6px", borderRadius: 4,
+          border: `1px solid ${badgeColor ? "currentColor" : "var(--line)"}`,
+          letterSpacing: "0.06em",
+        }}>{badge}</span>
       </div>
 
-      <div style={{
-        display: "flex", justifyContent: "center", alignItems: "center",
-        padding: "20px 0 16px",
-        transform: hovered ? "rotate(-6deg) scale(1.05)" : "rotate(0) scale(1)",
-        transition: "transform 0.5s cubic-bezier(.16,1,.3,1)",
-      }}>
-        <PizzaSVG toppings={blok.toppings || "pepperoni"} size={150} />
+      {/* Pizza glyph */}
+      <div style={{ display: "flex", justifyContent: "center", padding: "10px 0 8px" }}>
+        <PizzaGlyph variant={variant} size={140} rotating={hovered} />
       </div>
 
-      <h3 style={{ fontSize: 18, fontWeight: 700, color: "#fff", letterSpacing: "-0.02em", marginBottom: 6 }}>
-        {blok.name || "Slice name"}
-      </h3>
-      <p style={{ fontSize: 13, color: "rgba(255,255,255,0.35)", lineHeight: 1.6, marginBottom: 20, flex: 1 }}>
+      {/* Name + version */}
+      <div style={{ display: "flex", alignItems: "baseline", gap: 8, marginBottom: 4 }}>
+        <h3 style={{ margin: 0, fontSize: 17, fontWeight: 600, letterSpacing: "-0.02em" }}>{blok.name || "Slice"}</h3>
+        <span className="mono" style={{ fontSize: 11, color: "var(--fg-muted)" }}>v{version}</span>
+      </div>
+
+      {/* Tagline */}
+      <p className="mono" style={{ fontSize: 11, color: "var(--fg-dim)", lineHeight: 1.65, margin: "0 0 16px", minHeight: 38 }}>
         {blok.description || ""}
       </p>
 
+      {/* Specs grid */}
+      <div style={{
+        display: "grid", gridTemplateColumns: "1fr 1fr", gap: 0,
+        border: "1px solid var(--line)", borderRadius: 8, marginBottom: 16,
+      }}>
+        {specs.map((s, i) => (
+          <div key={i} style={{
+            padding: "8px 10px",
+            borderRight: i % 2 === 0 ? "1px solid var(--line)" : "none",
+            borderBottom: i < 2 ? "1px solid var(--line)" : "none",
+          }}>
+            <div className="mono" style={{ fontSize: 9, color: "var(--fg-muted)", letterSpacing: "0.08em", textTransform: "uppercase" }}>{s.k}</div>
+            <div className="mono" style={{ fontSize: 12, color: "#fff" }}>{s.v}</div>
+          </div>
+        ))}
+      </div>
+
+      {/* Price + Add */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-        <span style={{ fontSize: 22, fontWeight: 700, color: "#fff", letterSpacing: "-0.02em" }}>
-          €{parseFloat(blok.price || "0").toFixed(2)}
+        <span className="mono" style={{ fontSize: 19, fontWeight: 600, letterSpacing: "-0.02em" }}>
+          €{price.toFixed(2)}
+          <span style={{ color: "var(--fg-muted)", fontWeight: 400, fontSize: 11, marginLeft: 4 }}>/slice</span>
         </span>
         {count > 0 ? (
-          <div style={{
-            display: "flex", alignItems: "center",
-            borderRadius: 10, overflow: "hidden",
-            border: "1px solid rgba(255,255,255,0.1)",
-          }}>
-            <button onClick={() => removeFromCart(sliceId)} style={{
-              width: 36, height: 36, border: "none", background: "rgba(255,255,255,0.04)",
-              color: "#fff", fontSize: 16, cursor: "pointer", fontFamily: "inherit",
-            }}>−</button>
-            <span style={{
-              width: 36, height: 36, display: "flex", alignItems: "center", justifyContent: "center",
-              fontSize: 13, fontWeight: 600, color: "#fff",
-              background: "rgba(255,255,255,0.02)",
-              borderLeft: "1px solid rgba(255,255,255,0.06)",
-              borderRight: "1px solid rgba(255,255,255,0.06)",
-            }}>{count}</span>
-            <button onClick={handleAdd} style={{
-              width: 36, height: 36, border: "none", background: "rgba(255,255,255,0.04)",
-              color: "#fff", fontSize: 16, cursor: "pointer", fontFamily: "inherit",
-            }}>+</button>
+          <div style={{ display: "flex", alignItems: "center", border: "1px solid var(--line-strong)", borderRadius: 8, overflow: "hidden" }}>
+            <button onClick={() => removeFromCart(sliceId)} style={qtyBtnStyle}>−</button>
+            <span className="mono" style={{ minWidth: 28, textAlign: "center", fontSize: 12, color: "#fff", padding: "0 4px" }}>{count}</span>
+            <button onClick={handleAdd} style={qtyBtnStyle}>+</button>
           </div>
         ) : (
-          <button onClick={handleAdd} style={{
-            padding: "9px 20px", borderRadius: 10,
-            border: "1px solid rgba(255,255,255,0.1)",
-            background: "transparent", color: "rgba(255,255,255,0.7)",
-            fontSize: 12, fontWeight: 600, cursor: "pointer",
-            fontFamily: "inherit",
-          }}>
-            Add
+          <button onClick={handleAdd} className="btn" style={{ padding: "8px 14px" }}>
+            <span>add</span><span style={{ opacity: 0.5 }}>+</span>
           </button>
         )}
       </div>

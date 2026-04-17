@@ -10,9 +10,7 @@ import Page from "@/components/blocks/Page";
 storyblokInit({
   accessToken: process.env.NEXT_PUBLIC_STORYBLOK_TOKEN,
   use: [apiPlugin],
-  apiOptions: {
-    region: "eu",
-  },
+  apiOptions: { region: "eu" },
   components: {
     page: Page,
     hero: Hero,
@@ -26,8 +24,6 @@ storyblokInit({
 
 export async function fetchStory(slug: string) {
   const storyblokApi = getStoryblokApi();
-  const { data } = await storyblokApi.get(`cdn/stories/${slug}`, {
-    version: "draft",
-  });
+  const { data } = await storyblokApi.get(`cdn/stories/${slug}`, { version: "draft" });
   return data.story;
 }
