@@ -5,6 +5,7 @@ import Slice from "@/components/blocks/Slice";
 import About from "@/components/blocks/About";
 import Locations from "@/components/blocks/Locations";
 import Location from "@/components/blocks/Location";
+import Stat from "@/components/blocks/Stat";
 import Page from "@/components/blocks/Page";
 
 storyblokInit({
@@ -19,6 +20,7 @@ storyblokInit({
     about: About,
     locations: Locations,
     location: Location,
+    stat: Stat,
   },
 });
 

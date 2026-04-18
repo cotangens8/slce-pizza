@@ -1,12 +1,17 @@
 "use client";
 
-export default function Marquee() {
-  const items = [
-    "DOUGH HYDRATION 68%", "WOOD-FIRED 900°F", "BAKE p99 92s", "COLD FERMENTED 48H",
-    "SIX ROTATIONS / DAY", "SOC 2 TYPE II", "NO WHOLE PIES", "NO DELIVERY",
-    "HANDMADE IN LINZ", "v4.2.0 STABLE",
-  ];
-  const row = items.concat(items);
+const DEFAULTS = [
+  "DOUGH HYDRATION 68%", "WOOD-FIRED 900°F", "BAKE p99 92s", "COLD FERMENTED 48H",
+  "SIX ROTATIONS / DAY", "SOC 2 TYPE II", "NO WHOLE PIES", "NO DELIVERY",
+  "HANDMADE IN LINZ", "v4.2.0 STABLE",
+];
+
+export default function Marquee({ items }: { items?: string }) {
+  const parsed = items
+    ? items.split(",").map(s => s.trim()).filter(Boolean)
+    : DEFAULTS;
+  const row = parsed.concat(parsed);
+
   return (
     <div style={{
       borderTop: "1px solid var(--line)", borderBottom: "1px solid var(--line)",
