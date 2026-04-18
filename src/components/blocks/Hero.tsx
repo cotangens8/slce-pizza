@@ -1,6 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
-import { storyblokEditable, StoryblokComponent } from "@storyblok/react/rsc";
+import { storyblokEditable } from "@storyblok/react/rsc";
+import { StoryblokComponent } from "@storyblok/react";
 import Marquee from "../Marquee";
 
 export default function Hero({ blok }: { blok: any }) {
